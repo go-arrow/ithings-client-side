@@ -17,6 +17,7 @@ defineProps({
     </h3>
 
     <div class="bg-blue-600 text-light-100">Hello, Windi CSS</div>
+    <t-button>TDesign</t-button>
   </div>
 </template>
 
