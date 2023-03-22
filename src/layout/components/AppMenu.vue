@@ -1,5 +1,5 @@
 <template>
-  <t-menu theme="dark" default-value="dashboard" :collapsed="setting.collapsed">
+  <t-menu theme="dark" default-value="dashboard" :collapsed="setting.collapsed" @change="changeHandler">
     <template #logo>
       <img v-if="setting.collapsed" width="60" class="px-1"  src="@/assets/logo.png" alt="logo" />
       <img v-else height="28" src="@/assets/logo-full.png" alt="logo" />
@@ -11,32 +11,39 @@
       </template>
       仪表盘
     </t-menu-item>
-    <t-menu-item value="resource">
+    <t-submenu value="manage">
       <template #icon>
-        <t-icon name="server" />
+        <t-icon name="cloud-upload" />
       </template>
-      资源列表
-    </t-menu-item>
-    <t-menu-item value="root">
+      <template #title>
+        <span>数据接入</span>
+      </template>
+      <t-menu-item value="model"> 模型管理 </t-menu-item>
+      <t-menu-item value="product"> 产品管理 </t-menu-item>
+      <t-menu-item value="device"> 设备管理 </t-menu-item>
+    </t-submenu>
+    <t-menu-item value="setting">
       <template #icon>
-        <t-icon name="root-list" />
+        <t-icon name="setting" />
       </template>
-      根目录
-    </t-menu-item>
-    <t-menu-item value="control-platform">
-      <template #icon>
-        <t-icon name="control-platform" />
-      </template>
-      调度平台
+      系统设置
     </t-menu-item>
   </t-menu>
 </template>
 
 <script setup>
 import { useSettingStore } from '@/store/setting'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const setting = useSettingStore()
 
+const changeHandler = (value) => {
+  router.push({
+    name: value
+  })
+}
 </script>
 
 <style scoped>
