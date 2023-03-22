@@ -15,7 +15,7 @@ const routes = [
         path: 'manage',
         children: [
           {
-            path: '', // 默认子路由
+            path: 'model', // 默认子路由
             name: 'model',
             component: () => import('@/pages/manage/model/index.vue')
           },

@@ -7,7 +7,7 @@
     <t-header>
       <AppHeader/>
     </t-header>
-    <t-content>
+    <t-content class="p-2 max-h-screen overflow-y-auto">
       <router-view/>
     </t-content>
   </t-layout>
