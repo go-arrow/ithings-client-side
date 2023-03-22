@@ -1,16 +1,17 @@
 <template>
-  <t-menu theme="dark" default-value="dashboard" :collapsed="setting.collapsed" @change="changeHandler">
+  <t-menu theme="dark" :value="route.name" :collapsed="setting.collapsed" @change="changeHandler">
     <template #logo>
       <img v-if="setting.collapsed" width="60" class="px-1"  src="@/assets/logo.png" alt="logo" />
       <img v-else height="28" src="@/assets/logo-full.png" alt="logo" />
     </template>
-    
+
     <t-menu-item value="dashboard">
       <template #icon>
         <t-icon name="dashboard" />
       </template>
       仪表盘
     </t-menu-item>
+
     <t-submenu value="manage">
       <template #icon>
         <t-icon name="cloud-upload" />
@@ -22,6 +23,7 @@
       <t-menu-item value="product"> 产品管理 </t-menu-item>
       <t-menu-item value="device"> 设备管理 </t-menu-item>
     </t-submenu>
+
     <t-menu-item value="setting">
       <template #icon>
         <t-icon name="setting" />
@@ -33,8 +35,9 @@
 
 <script setup>
 import { useSettingStore } from '@/store/setting'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router' 
 
+const route = useRoute()
 const router = useRouter()
 
 const setting = useSettingStore()

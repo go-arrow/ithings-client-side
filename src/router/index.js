@@ -34,7 +34,7 @@ const routes = [
       {
         path: 'setting',
         name: 'setting',
-        component: () => import('@/pages/dashboard/index.vue')
+        component: () => import('@/pages/setting/index.vue')
       },
     ]
   },
