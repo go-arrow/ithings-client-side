@@ -1,6 +1,8 @@
 <template>
   <div>
-    <t-card title="物模型" :bordered="false">
+    <t-card>
+      <p class="text-xl font-bold leading-loose pb-2">物模型</p>
+
       <t-alert class="mb-4" message="模板库提供已发布的标准物模版查看功能，开发者可在页面查看各行业/场景下的品类物模版功能定义信息，同时可提交新品类物模版申请，通过审核的物模版将会在平台上正式发布。" />
       
       <t-row class="mb-4">
@@ -22,7 +24,7 @@
           </t-form>
         </t-col>
         <t-col :span="1" class="flex justify-end">
-          <t-button theme="primary">
+          <t-button theme="primary" @click="handleCreateModel">
             新建模型
           </t-button>
         </t-col>
@@ -43,6 +45,8 @@
 <script setup>
 import { ref } from 'vue'
 import { SearchIcon } from 'tdesign-icons-vue-next'
+import { useRouter } from 'vue-router'
+
 
 const columns = ref([
   {colKey: 'name', title: '名称'},
@@ -102,6 +106,12 @@ const options2 = [
 
 const onSubmit = () => {
 
+}
+
+const router = useRouter()
+
+const handleCreateModel = () => {
+  router.push({name: 'CreateModel'})
 }
 
 </script>

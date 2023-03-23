@@ -8,39 +8,57 @@ const routes = [
     children: [
       {
         path: '', // 默认子路由
-        name: 'dashboard',
-        component: () => import('@/pages/dashboard/index.vue')
+        name: 'Dashboard',
+        component: () => import('@/pages/dashboard/index.vue'),
+        meta: {
+          menu: 'Dashboard'
+        }
       },
       {
-        path: 'manage',
-        children: [
-          {
-            path: 'model', // 默认子路由
-            name: 'model',
-            component: () => import('@/pages/manage/model/index.vue')
-          },
-          {
-            path: 'product',
-            name: 'product',
-            component: () => import('@/pages/manage/product/index.vue')
-          },
-          {
-            path: 'device',
-            name: 'device',
-            component: () => import('@/pages/manage/device/index.vue')
-          },
-        ]
+        path: '/model',
+        name: 'Model',
+        component: () => import('@/pages/manage/model/index.vue'),
+        meta: {
+          menu: 'Model'
+        }
       },
       {
-        path: 'setting',
-        name: 'setting',
-        component: () => import('@/pages/setting/index.vue')
+        path: '/model/create',
+        name: 'CreateModel',
+        component: () => import('@/pages/manage/model/create/index.vue'),
+        meta: {
+          menu: 'Model'
+        }
+      },
+      {
+        path: '/product',
+        name: 'Product',
+        component: () => import('@/pages/manage/product/index.vue'),
+        meta: {
+          menu: 'Product'
+        }
+      },
+      {
+        path: '/device',
+        name: 'Device',
+        component: () => import('@/pages/manage/device/index.vue'),
+        meta: {
+          menu: 'Device'
+        }
+      },
+      {
+        path: '/setting',
+        name: 'Setting',
+        component: () => import('@/pages/setting/index.vue'),
+        meta: {
+          menu: 'Setting'
+        }
       },
     ]
   },
   {
     path: '/login',
-    name: 'login',
+    name: 'Login',
     component: () => import('@/pages/login/index.vue')
   }
 ]
