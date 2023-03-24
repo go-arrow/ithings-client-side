@@ -45,7 +45,15 @@
 
       <!-- 属性列表 -->
       <p class="font-bold mt-8 mb-4">属性列表</p>
-      <t-table row-key="index" :columns="propertyColumns" hover bordered></t-table>
+      <t-table row-key="index" :columns="propertyColumns" :data="propertyData" hover bordered>
+        <template #op="{ row }">
+          <t-space>
+            <t-link theme="primary" hover="color">查看</t-link>
+            <t-link theme="primary" hover="color">编辑</t-link>
+            <t-link theme="primary" hover="color">删除</t-link>
+          </t-space>
+        </template>
+      </t-table>
 
       <!-- 事件列表 -->
       <p class="font-bold mt-8 mb-4">事件列表</p>
@@ -88,10 +96,10 @@
           <!-- int/float特有 -->
           <div v-if="itemFormData.dataType == 'int' || itemFormData.dataType == 'float'">
             <t-form-item label="取值范围" name="range">
-              <t-range-input :inputProps="rangeInputProps"  placeholder=" "/>
+              <t-range-input v-model="itemFormData.range" :inputProps="rangeInputProps"  placeholder=" "/>
             </t-form-item>
             <t-form-item label="数据精度">
-              <t-input v-model="itemFormData.precision" placeholder="请输入数据精度" />
+              <t-input v-model="itemFormData.step" placeholder="请输入数据精度" />
             </t-form-item>
             <t-form-item label="数据单位">
               <t-select v-model="itemFormData.uint" :options="uintOptions"></t-select>
@@ -108,7 +116,7 @@
           <!-- bool特有 -->
           <div v-else-if="itemFormData.dataType == 'bool'">
             <t-form-item label="布尔值" name="binary">
-              <t-range-input :inputProps="binaryInputProps"/>
+              <t-range-input v-model="itemFormData.binary" :inputProps="binaryInputProps" placeholder=" "/>
             </t-form-item>
           </div>
 
@@ -128,7 +136,7 @@
                     <t-input v-model="item.v" placeholder="1-20位，中文、英文、数字及特殊字符"/>
                   </t-col>
                   <t-col :span="1">
-                    <t-button shape="square" variant="text" theme="danger" @click="handleRemoveEnum(i)">
+                    <t-button shape="square" variant="text" theme="danger" @click="handleRemoveItemEnum(i)">
                       <remove-icon slot="icon" />
                     </t-button>
                   </t-col>
@@ -136,7 +144,7 @@
                 <t-row>
                   <t-col :span="12">
                     <t-link theme="primary" hover="color" @click="handleCreateItemEnum">
-                      <add-icon slot="prefix-icon"></add-icon>
+                      <add-icon slot="prefix-icon" size="large"></add-icon>
                       添加枚举项
                     </t-link>
                   </t-col>
@@ -147,9 +155,9 @@
 
           <!-- struct特有 -->
           <div v-else-if="itemFormData.dataType == 'struct'">
-            <t-form-item label="JSON对象" name="json">
+            <t-form-item label="结构体对象" name="struct">
               <div class="w-full mt-2">
-                <t-row v-for="(item, i) in jsons" :key="i" class="bg-light-300 text-gray-400 px-3 py-1 font-xs mb-2">
+                <t-row v-for="(item, i) in itemFormData.struct" :key="i" class="bg-light-300 text-gray-400 px-3 py-1 font-xs mb-2">
                   <t-col :span="3">{{ item.name }}</t-col>
                   <t-col :span="3">{{ item.code }}</t-col>
                   <t-col :span="3">{{ item.type }}</t-col>
@@ -159,10 +167,10 @@
                     <t-link theme="primary" hover="color" @click="handleRemoveJson(i)">删除</t-link>
                   </t-col>
                 </t-row>
-                <t-row class="mt-4">
+                <t-row class="mt-1">
                   <t-col :span="12">
-                    <t-link theme="primary" hover="color" @click="handleCreateItemJson">
-                      <add-icon slot="prefix-icon"></add-icon>
+                    <t-link theme="primary" hover="color" @click="handleCreateItemStruct">
+                      <add-icon slot="prefix-icon" size="large"></add-icon>
                       添加参数
                     </t-link>
                   </t-col>
@@ -177,17 +185,17 @@
               <t-select v-model="itemFormData.arrayType" :options="arrayTypeOptions"></t-select>
             </t-form-item>
 
-            <t-form-item label="元素个数" name="arrayNum">
-              <t-input v-model="itemFormData.arrayNum" placeholder="请输入元素个数" />
+            <t-form-item label="元素个数" name="arraySize">
+              <t-input v-model="itemFormData.arraySize" placeholder="请输入元素个数" />
             </t-form-item>
 
             <!-- int/float特有 -->
             <div v-if="itemFormData.arrayType == 'int' || itemFormData.arrayType == 'float'">
               <t-form-item label="取值范围" name="range">
-                <t-range-input :inputProps="rangeInputProps"/>
+                <t-range-input v-model="itemFormData.range" :inputProps="rangeInputProps" placeholder=" "/>
               </t-form-item>
               <t-form-item label="数据精度">
-                <t-input v-model="itemFormData.precision" placeholder="请输入数据精度" />
+                <t-input v-model="itemFormData.step" placeholder="请输入数据精度" />
               </t-form-item>
               <t-form-item label="数据单位">
                 <t-select v-model="itemFormData.uint" :options="uintOptions"></t-select>
@@ -204,7 +212,7 @@
             <!-- bool特有 -->
             <div v-else-if="itemFormData.arrayType == 'bool'">
               <t-form-item label="布尔值" name="binary">
-                <t-range-input :inputProps="binaryInputProps"/>
+                <t-range-input :inputProps="binaryInputProps" placeholder=" "/>
               </t-form-item>
             </div>
 
@@ -224,7 +232,7 @@
                       <t-input v-model="item.v" placeholder="1-20位，中文、英文、数字及特殊字符"/>
                     </t-col>
                     <t-col :span="1">
-                      <t-button shape="square" variant="text" theme="danger" @click="handleRemoveEnum(i)">
+                      <t-button shape="square" variant="text" theme="danger" @click="handleRemoveItemEnum(i)">
                         <remove-icon slot="icon" />
                       </t-button>
                     </t-col>
@@ -232,7 +240,7 @@
                   <t-row>
                     <t-col :span="12">
                       <t-link theme="primary" hover="color" @click="handleCreateItemEnum">
-                        <add-icon slot="prefix-icon"></add-icon>
+                        <add-icon slot="prefix-icon" size="large"></add-icon>
                         添加枚举项
                       </t-link>
                     </t-col>
@@ -243,9 +251,9 @@
 
             <!-- struct特有 -->
             <div v-else-if="itemFormData.arrayType == 'struct'">
-              <t-form-item label="JSON对象" name="json">
+              <t-form-item label="结构体对象" name="json">
                 <div class="w-full mt-2">
-                  <t-row v-for="(item, i) in jsons" :key="i" class="bg-light-300 text-gray-400 px-3 py-1 font-xs mb-2">
+                  <t-row v-for="(item, i) in itemFormData.struct" :key="i" class="bg-light-300 text-gray-400 px-3 py-1 font-xs mb-2">
                     <t-col :span="3">{{ item.name }}</t-col>
                     <t-col :span="3">{{ item.code }}</t-col>
                     <t-col :span="3">{{ item.type }}</t-col>
@@ -255,10 +263,10 @@
                       <t-link theme="primary" hover="color" @click="handleRemoveJson(i)">删除</t-link>
                     </t-col>
                   </t-row>
-                  <t-row class="mt-4">
+                  <t-row class="mt-1">
                     <t-col :span="12">
-                      <t-link theme="primary" hover="color" @click="handleCreateItemJson">
-                        <add-icon slot="prefix-icon"></add-icon>
+                      <t-link theme="primary" hover="color" @click="handleCreateItemStruct">
+                        <add-icon slot="prefix-icon" size="large"></add-icon>
                         添加参数
                       </t-link>
                     </t-col>
@@ -273,28 +281,45 @@
             <t-form-item label="读写类型" name="accessMode">
               <t-select v-model="itemFormData.accessMode" :options="accessModeOptions"></t-select>
             </t-form-item>
-
-            <t-form-item label="描述信息">
-              <t-textarea v-model="basicFormData.description" placeholder="请输入描述信息" :autosize="{ minRows: 4 }" />
-            </t-form-item>
           </div>
         </div>
 
         <!-- 事件项 -->
         <div v-else-if="itemFormData.action == 'event'">
-        事件项
+          <t-form-item label="事件类型" name="eventType">
+            <t-select v-model="itemFormData.eventType" :options="eventTypeOptions"></t-select>
+          </t-form-item>
+
+          <t-form-item label="输出参数" name="eventOutput">
+            <div class="w-full mt-2">
+              <t-row class="mt-1">
+                <t-col :span="12">
+                  <t-link theme="primary" hover="color">
+                    <add-icon slot="prefix-icon" size="large"></add-icon>
+                    添加参数
+                  </t-link>
+                </t-col>
+              </t-row>
+            </div>
+          </t-form-item>
         </div>
 
         <!-- 服务项 -->
         <div v-else-if="itemFormData.action == 'service'">
         服务项
         </div>
-
+        
+        <!-- 共有的 -->
+        <div class="mt-6">
+          <t-form-item label="描述信息">
+            <t-textarea v-model="itemFormData.description" placeholder="请输入描述信息" :autosize="{ minRows: 4 }" />
+          </t-form-item>
+        </div>
       </t-form>
 
       <template #footer>
         <div class="flex justify-end">
-          <t-button @click="handleFunctionConfirm">确定</t-button>
+          <t-button @click="handleItemConfirm">确定</t-button>
           <t-button variant="outline" @click="showItemDrawer = false"> 取消 </t-button>
         </div>
       </template>
@@ -302,62 +327,62 @@
     </t-drawer>
 
     <!-- 添加结构体参数 -->
-    <t-drawer v-model:visible="showJsonDrawer" size="450">
+    <t-drawer v-model:visible="showStructDrawer" size="450">
       <template #header>
         <p class="text-sm font-bold">添加结构体参数</p>
       </template>
 
       <!-- 结构体表单 -->
-      <t-form :rules="ITEM_FORM_RULES" :data="objectFormData" label-align="top">
+      <t-form :rules="STRUCT_FORM_RULES" :data="structFormData" label-align="top">
         <!-- 结构体共有属性 -->
         <t-form-item label="功能名称" name="name">
-          <t-input v-model="objectFormData.name" placeholder="1-32位，中文、英文、数字及特殊字符_-，必须以中文或英文字符开头" />
+          <t-input v-model="structFormData.name" placeholder="1-32位，中文、英文、数字及特殊字符_-，必须以中文或英文字符开头" />
         </t-form-item>
         
         <t-form-item label="标识符" name="code">
-          <t-input v-model="objectFormData.code" placeholder="1-32位，支持英文、数字及特殊字符_-，必须以英文字符开头" />
+          <t-input v-model="structFormData.code" placeholder="1-32位，支持英文、数字及特殊字符_-，必须以英文字符开头" />
         </t-form-item>
         
-        <t-form-item label="数据类型" name="type">
-          <t-select v-model="objectFormData.type" :options="objectTypeOptions"></t-select>
+        <t-form-item label="数据类型" name="dataType">
+          <t-select v-model="structFormData.type" :options="structTypeOptions"></t-select>
         </t-form-item>
 
         <!-- int float 特有 -->
-        <div v-if="objectFormData.type == 'int' || objectFormData.type == 'float'">
+        <div v-if="structFormData.type == 'int' || structFormData.type == 'float'">
           <t-form-item label="取值范围" name="range">
-            <t-range-input :inputProps="rangeInputProps"/>
+            <t-range-input v-model="structFormData.range" :inputProps="rangeInputProps" placeholder=" "/>
           </t-form-item>
           <t-form-item label="数据精度">
-            <t-input v-model="objectFormData.precision" placeholder="请输入数据精度" />
+            <t-input v-model="structFormData.step" placeholder="请输入数据精度" />
           </t-form-item>
           <t-form-item label="数据单位">
-            <t-select v-model="objectFormData.uint" :options="uintOptions"></t-select>
+            <t-select v-model="structFormData.uint" :options="uintOptions"></t-select>
           </t-form-item>
         </div>
 
         <!-- string特有 -->
-        <div v-else-if="objectFormData.type == 'string'">
+        <div v-else-if="structFormData.type == 'string'">
           <t-form-item label="数据长度" name="length">
-            <t-input v-model="objectFormData.length" placeholder="请输入数据长度" /> <p class="min-w-[30px] ml-2">字符</p>
+            <t-input v-model="structFormData.length" placeholder="请输入数据长度" /> <p class="min-w-[30px] ml-2">字符</p>
           </t-form-item>
         </div>
         
         <!-- bool特有 -->
-        <div v-else-if="objectFormData.type == 'bool'">
+        <div v-else-if="structFormData.type == 'bool'">
           <t-form-item label="布尔值" name="binary">
-            <t-range-input :inputProps="binaryInputProps"/>
+            <t-range-input v-model="structFormData.binary" :inputProps="binaryInputProps"/>
           </t-form-item>
         </div>
 
         <!-- enum特有 -->
-        <div v-else-if="objectFormData.type == 'enum'">
+        <div v-else-if="structFormData.type == 'enum'">
           <t-form-item label="枚举项" name="enums">
             <div class="w-full mt-2">
               <t-row class="mb-4 font-bold">
                 <t-col :span="4">参数值</t-col>
                 <t-col :span="8">参数描述</t-col>
               </t-row>
-              <t-row v-for="(item, i) in objectFormData.enums" :key="i" :gutter="[0]" class="mb-4">
+              <t-row v-for="(item, i) in structFormData.enums" :key="i" :gutter="[0]" class="mb-4">
                 <t-col :span="3">
                   <t-input v-model="item.k" placeholder="整数"/>
                 </t-col>
@@ -365,14 +390,14 @@
                   <t-input v-model="item.v" placeholder="1-20位，中文、英文、数字及特殊字符"/>
                 </t-col>
                 <t-col :span="1">
-                  <t-button shape="square" variant="text" theme="danger" @click="handleRemoveJsonEnum(i)">
+                  <t-button shape="square" variant="text" theme="danger" @click="handleRemoveStructEnum(i)">
                     <remove-icon slot="icon" />
                   </t-button>
                 </t-col>
               </t-row>
               <t-row>
                 <t-col :span="12">
-                  <t-link theme="primary" hover="color" @click="handleCreateItemJsonEnum">
+                  <t-link theme="primary" hover="color" @click="handleCreateStructEnum">
                     <add-icon slot="prefix-icon"></add-icon>
                     添加枚举项
                   </t-link>
@@ -385,8 +410,8 @@
 
       <template #footer>
         <div class="flex justify-end">
-          <t-button @click="handleJsonConfirm">确定</t-button>
-          <t-button variant="outline" @click="showJsonDrawer = false"> 取消 </t-button>
+          <t-button @click="handleStructConfirm">确定</t-button>
+          <t-button variant="outline" @click="showStructDrawer = false"> 取消 </t-button>
         </div>
       </template>
     </t-drawer>
@@ -397,149 +422,6 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowLeftIcon, AddIcon, RemoveIcon } from 'tdesign-icons-vue-next'
-
-
-
-const handleFunctionConfirm = () => {
-  console.log(itemFormData)
-  showItemDrawer.value = false
-}
-
-// 显示结构体抽屉柜
-const showJsonDrawer = ref(false)
-
-
-
-const ITEM_FORM_RULES = {
-  action: [{ required: true, message: '请选择功能项' }],
-  code: [{ required: true, message: '请输入功能代码' }],
-  name: [{ required: true, message: '请输入功能项目名称' }],
-  
-  dataType: [{ required: true, message: '请选择数据类型' }],
-  arrayType: [{ required: true, message: '请选择元素类型' }],
-  length: [{ required: true, message: '请选择数据长度' }],
-  binary: [{ required: true, message: '请设置布尔含义' }],
-  enums: [{ required: true, message: '请设置枚举项' }],
-  json: [{ required: true, message: '请添加结构体参数' }],
-  range: [{ required: true, message: '请输入数据范围' }],
-  accessMode: [{ required: true, message: '请选择读写方式' }],
-  arrayNum: [{ required: true, message: '元素个数不能为空' }],
-}
-
-const itemFormData = reactive({
-  action: 'property',
-  name: '',
-  code: '',
-  dataType: 'int',
-
-  // 整数 or 浮点数
-  min: '',
-  max: '',
-  precision: '',
-  uint: '',
-
-  // 字符串长度 
-  length: '',
-  
-  // 布尔
-  truer: '',
-  falser: '',
-
-  // 枚举
-  enums: [],
-
-  // 数组
-  arrayType: 'int',
-  arrayNum: '',
-
-  accessMode: 'rw',
-  description: '',
-})
-
-const jsons = reactive([])
-
-
-
-const objectFormData = reactive({
-  name: '',
-  code: '',
-  type: 'int',
-  length: '',
-  min: '',
-  max: '',
-  precision: '',
-  truer: '',
-  falser: '',
-  uint: '',
-  enums: []
-})
-
-const handleJsonConfirm = () => {
-  if(editStatus == true) {
-    // 如果是编辑状态
-    Object.assign(jsons[editJsonIdx], {...objectFormData})
-
-    editStatus = false
-    editJsonIdx = 0
-  } else {
-    jsons.push({...objectFormData})
-  }
-
-  const keys = Object.keys(objectFormData)
-  let obj = {}
-  keys.forEach(item => {
-    obj[item] = ''
-  })
-  Object.assign(objectFormData, obj)
-
-  showJsonDrawer.value = false
-}
-
-const handleCreateItemEnum = () => {
-  itemFormData.enums.push({})
-}
-
-const handleRemoveEnum = (i) => {
-  itemFormData.enums.splice(i, 1)
-}
-
-const handleCreateItemJsonEnum = () => {
-  objectFormData.enums.push({})
-}
-
-const handleRemoveJsonEnum = (i) => {
-  objectFormData.enums.splice(i, 1)
-}
-
-const handleCreateItemJson = () => {
-  const keys = Object.keys(objectFormData)
-  let obj = {}
-  keys.forEach(item => {
-    obj[item] = ''
-  })
-  
-  obj['type'] = 'int'
-  obj['enums'] = []
-
-  Object.assign(objectFormData, obj)
-
-  showJsonDrawer.value = true
-}
-
-let editStatus = false
-let editJsonIdx = 0
-
-const handleEditJson = (i) => {
-  Object.assign(objectFormData, jsons[i])
-  showJsonDrawer.value = true
-  
-  editStatus = true
-  editJsonIdx = i
-}
-
-const handleRemoveJson = (i) => {
-  jsons.splice(i, 1)
-}
 
 const actionOptions = [
   { label: '属性类型', value: 'property'},
@@ -566,7 +448,7 @@ const arrayTypeOptions = [
   { label: 'struct(结构体)', value: 'struct' },
 ]
 
-const objectTypeOptions = [
+const structTypeOptions = [
   { label: 'int(整数型)', value: 'int'},
   { label: 'float(浮点型)', value: 'float' },
   { label: 'string(字符串)', value: 'string' },
@@ -575,7 +457,7 @@ const objectTypeOptions = [
 ]
 
 const rangeInputProps = [{ label: '最小值:', name: 'min' }, { label: '最大值:', name: 'max' }]
-const binaryInputProps = [{ label: 'true', name: 'min' }, { label: 'false', name: 'max' }]
+const binaryInputProps = [{ label: 'true:', name: 'min' }, { label: 'false:', name: 'max' }]
 
 const uintOptions = [
   { label: '平方厘米 / c㎡', value: '1'},
@@ -592,12 +474,18 @@ const accessModeOptions = [
   { label: '只读', value: 'r' },
 ]
 
+const eventTypeOptions = [
+  { label: '信息', value: 'info'},
+  { label: '告警', value: 'warn' },
+  { label: '故障', value: 'error' },
+]
+
 const propertyColumns = [
   {colKey: 'name', title: '名称'},
   {colKey: 'code', title: '标识符'},
-  {colKey: 'type', title: '数据类型'},
-  {colKey: 'action', title: '读写类型'},
-  {colKey: 'op', title: '操作'},
+  {colKey: 'dataType', title: '数据类型'},
+  {colKey: 'accessMode', title: '读写类型'},
+  {colKey: 'op', title: '操作', align: 'center'},
 ]
 
 const eventColumns = [
@@ -687,6 +575,336 @@ const showItemDrawer = ref(false)
 
 const handleCreateItem = () => {
   showItemDrawer.value = true
+}
+
+// 功能项校验
+const ITEM_FORM_RULES = {
+  action: [{ required: true, message: '请选择功能项' }],
+  code: [{ required: true, message: '请输入功能代码' }],
+  name: [{ required: true, message: '请输入功能项目名称' }],
+
+  range: [{ required: true, message: '请输入数据范围' }],
+  length: [{ required: true, message: '请输入数据长度' }],
+  binary: [{ required: true, message: '请输入布尔值的含义' }],
+  enums: [{ required: true, message: '请设置枚举项' }],
+  struct: [{ required: true, message: '请添加结构体参数' }],
+  arrayType: [{ required: true, message: '请选择元素类型' }],
+  arraySize: [{ required: true, message: '元素个数不能为空' }],
+
+  accessMode: [{ required: true, message: '请选择读写方式' }],
+  dataType: [{ required: true, message: '请选择数据类型' }],
+
+  // 事件
+  eventType: [{ required: true, message: '请选择事件类型' }],
+  eventOutput: [{ required: true, message: '请填写事件输出参数' }],
+}
+
+// 功能项表单
+const itemFormData = reactive({
+  action: 'property',
+  name: '',
+  code: '',
+  dataType: 'int',
+
+  // 整数 or 浮点数
+  range: [],
+  step: '',
+  uint: '',
+
+  // 字符串长度 
+  length: '',
+  
+  // 布尔
+  binary: [],
+
+  // 枚举
+  enums: [],
+
+  // 数组
+  arrayType: 'int',
+  arraySize: '',
+
+  // 结构体
+  struct: [],
+
+  // 事件
+  eventType: 'info',
+
+  accessMode: 'rw',
+  description: '',
+})
+
+// 功能项添加枚举类型
+const handleCreateItemEnum = () => {
+  itemFormData.enums.push({})
+}
+
+// 功能项删除枚举类型
+const handleRemoveItemEnum = (i) => {
+  itemFormData.enums.splice(i, 1)
+}
+
+// 显示结构体抽屉柜
+const showStructDrawer = ref(false)
+
+// 添加结构体参数
+const handleCreateItemStruct = () => {
+  const keys = Object.keys(structFormData)
+  let obj = {}
+  keys.forEach(item => {
+    obj[item] = ' '
+  })
+  
+  obj['type'] = 'int'
+  obj['range'] = [,]
+  obj['binary'] = []
+  obj['enums'] = []
+
+  Object.assign(structFormData, obj)
+
+  showStructDrawer.value = true
+}
+
+// 结构体表单校验
+const STRUCT_FORM_RULES = {
+  name: [{ required: true, message: '请输入功能名称' }],
+  code: [{ required: true, message: '请输入功能代码' }],
+  dataType: [{ required: true, message: '请选择数据类型' }],
+  range: [{ required: true, message: '请输入数据范围' }],
+  length: [{ required: true, message: '请输入数据长度' }],
+  binary: [{ required: true, message: '请输入布尔值的含义' }],
+  enums: [{ required: true, message: '请设置枚举项' }],
+  struct: [{ required: true, message: '请添加结构体参数' }],
+  accessMode: [{ required: true, message: '请选择读写方式' }],
+}
+
+// 结构体表单数据
+const structFormData = reactive({
+  name: '',
+  code: '',
+  type: 'int',
+  length: '',
+  range: [],
+  step: '',
+  binary: [],
+  uint: '',
+  enums: []
+})
+
+// 添加结构体表单中的枚举
+const handleCreateStructEnum = () => {
+  structFormData.enums.push({})
+}
+
+// 删除结构体表单中的枚举
+const handleRemoveStructEnum = (i) => {
+  structFormData.enums.splice(i, 1)
+}
+
+// 结构体编辑状态及索引
+let structEditStatus = false
+let structEditIdx = 0
+
+// 编辑结构体回显
+const handleEditJson = (i) => {
+  Object.assign(structFormData, itemFormData.struct[i])
+  showStructDrawer.value = true
+  
+  structEditStatus = true
+  structEditIdx = i
+}
+
+// 删除结构体
+const handleRemoveJson = (i) => {
+  itemFormData.struct.splice(i, 1)
+}
+
+// 结构体编辑
+const parseStructForm = () => {
+  if(structFormData.type == 'int' || structFormData.type == 'float') {
+    return {
+      min: structFormData.range[0],
+      max: structFormData.range[1],
+      step: structFormData.step,
+      unit: structFormData.unit ? structFormData.unit : '',
+    }
+  } else if(structFormData.type == 'string') {
+    return {
+      length: structFormData.length
+    }
+  } else if(structFormData.type == 'bool') {
+    return {
+      truer: structFormData.binary[0],
+      falser: structFormData.binary[1]
+    }
+  } else if(structFormData.type == 'enum') {
+    return {
+      item: {...structFormData.enums}
+    }
+  }
+}
+const handleStructConfirm = () => {
+  // 解析结构体字段
+  const s = {
+      name: structFormData.name,
+      code: structFormData.code,
+      type: structFormData.type,
+      ...parseStructForm()
+  }
+
+  if(structEditStatus == true) {
+    // 如果是编辑状态
+    Object.assign(itemFormData.struct[structEditIdx], {...s})
+
+    structEditStatus = false
+    structEditIdx = 0
+  } else {
+    itemFormData.struct.push({...s})
+  }
+
+  const keys = Object.keys(structFormData)
+  let obj = {}
+  keys.forEach(item => {
+    obj[item] = ''
+  })
+
+  obj['type'] = 'int'
+  obj['range'] = [,]
+  obj['binary'] = []
+  obj['enums'] = []
+
+  Object.assign(structFormData, obj)
+
+  showStructDrawer.value = false
+}
+
+// 解析数组类型
+const parseArray = () => {
+  if(itemFormData.arrayType == 'int' || itemFormData.arrayType == 'float') {
+    return {
+      min: itemFormData.range[0],
+      max: itemFormData.range[1],
+      step: itemFormData.step,
+      unit: itemFormData.unit ? itemFormData.unit : '',
+    }
+  } else if(itemFormData.arrayType == 'string') {
+    return {
+      length: itemFormData.length
+    }
+  } else if(itemFormData.arrayType == 'bool') {
+    return {
+      truer: itemFormData.binary[0],
+      falser: itemFormData.binary[1]
+    }
+  } else if(itemFormData.arrayType == 'enum') {
+    return {
+      item: {...itemFormData.enums}
+    }
+  } else if(itemFormData.arrayType == 'struct') {
+    return {
+      item: {...itemFormData.struct}
+    }
+  }
+}
+
+// 解析属性项
+const parsePropertyForm = () => {
+  if(itemFormData.dataType == 'int' || itemFormData.dataType == 'float') {
+    return {
+      min: itemFormData.range[0],
+      max: itemFormData.range[1],
+      step: itemFormData.step,
+      unit: itemFormData.unit ? itemFormData.unit : '',
+    }
+  } else if(itemFormData.dataType == 'string') {
+    return {
+      length: itemFormData.length
+    }
+  } else if(itemFormData.dataType == 'bool') {
+    return {
+      truer: itemFormData.binary[0],
+      falser: itemFormData.binary[1]
+    }
+  } else if(itemFormData.dataType == 'enum') {
+    return {
+      item: {...itemFormData.enums}
+    }
+  } else if(itemFormData.dataType == 'struct') {
+    return {
+      item: {...itemFormData.struct}
+    }
+  } else if(itemFormData.dataType == 'array') {
+    return {
+      type: itemFormData.arrayType,
+      size: itemFormData.arraySize,
+      ...parseArray()
+    }
+  }
+}
+
+const propertyData = reactive([])
+
+// 添加功能项事件
+const handleItemConfirm = () => {
+  const property = {
+    name: itemFormData.name,
+    code: itemFormData.code,
+    accessMode: itemFormData.accessMode,
+    dataType: {
+      type: itemFormData.dataType,
+      specs: {
+        ...parsePropertyForm()
+      }
+    },
+    description: itemFormData.description
+  }
+
+  console.log(JSON.stringify(property))
+
+  propertyData.push({
+    name: property.name,
+    code: property.code,
+    dataType: property.dataType.type,
+    accessMode: property.accessMode == 'r' ? '只读' : '读写'
+  })
+
+  // 清空功能项
+  {
+    const keys = Object.keys(itemFormData)
+    let obj = {}
+    keys.forEach(item => {
+      obj[item] = ' '
+    })
+    
+    obj['action'] = 'property'
+    obj['dataType'] = 'int'
+    obj['range'] = [,]
+    obj['binary'] = []
+    obj['enums'] = []
+    obj['struct'] = []
+    obj['arrayType'] = 'int'
+    obj['accessMode'] = 'rw'
+
+    Object.assign(itemFormData, obj)
+  }
+  
+  // 清空字符串结构体
+  {
+    const keys = Object.keys(structFormData)
+    let obj = {}
+    keys.forEach(item => {
+      obj[item] = ''
+    })
+    
+    obj['type'] = 'int'
+    obj['range'] = [,]
+    obj['binary'] = []
+    obj['enums'] = []
+
+    Object.assign(structFormData, obj)
+  }
+
+  showItemDrawer.value = false
 }
 
 </script>
